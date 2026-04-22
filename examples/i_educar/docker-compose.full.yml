@@ -1,0 +1,97 @@
+name: ieducar-2100
+
+x-ieducar-service: &ieducar-service
+  build:
+    context: .
+    dockerfile: docker/deploy/Dockerfile
+    args:
+      PHP_VERSION: ${DOCKER_PHP_VERSION:-8.4}
+      COMPOSER_VERSION: ${DOCKER_COMPOSER_VERSION:-2.8}
+  image: ieducar:${IEDUCAR_IMAGE_TAG:-2.10.0}
+  env_file:
+    - .env
+  environment:
+    APP_ENV: ${APP_ENV:-production}
+    APP_DEBUG: ${APP_DEBUG:-false}
+    APP_URL: ${APP_URL:-http://localhost:${DOCKER_APP_PORT:-8080}}
+    DB_HOST: postgres
+    DB_PORT: 5432
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: ${QUEUE_CONNECTION:-redis}
+  volumes:
+    - ./.env:/var/www/ieducar/.env
+    - ieducar_storage:/var/www/ieducar/storage
+    - ieducar_cache:/var/www/ieducar/bootstrap/cache
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *ieducar-service
+    container_name: ieducar-app
+    ports:
+      - "${DOCKER_APP_PORT:-8080}:80"
+
+  horizon:
+    <<: *ieducar-service
+    container_name: ieducar-horizon
+    command: ["php", "artisan", "horizon"]
+    profiles: ["queue"]
+
+  init:
+    <<: *ieducar-service
+    container_name: ieducar-init
+    command:
+      - sh
+      - -lc
+      - php artisan key:generate --force --ansi && php artisan storage:link --ansi && php artisan migrate --force --ansi && php artisan db:seed --force --ansi
+    restart: "no"
+    profiles: ["setup"]
+
+  postgres:
+    container_name: ieducar-postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-ieducar}
+      POSTGRES_USER: ${DB_USERNAME:-ieducar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ieducar}
+      PGUSER: ${DB_USERNAME:-ieducar}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DOCKER_POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-ieducar} -d ${DB_DATABASE:-ieducar}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    container_name: ieducar-redis
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${DOCKER_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  ieducar_storage:
+  ieducar_cache:
