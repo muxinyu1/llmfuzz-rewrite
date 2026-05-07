@@ -1,0 +1,38 @@
+{
+    "runtime": {
+        "selected_app": "torrentpier",
+        "use_container": true,
+        "verifier_port": 8000,
+        "verifier_host": "host.docker.internal"
+    },
+    "opencode_agent": {
+        "model": "deepseek/deepseek-v4-flash",
+        "timeout_seconds": 1800,
+        "idle_timeout_seconds": 300,
+        "startup_timeout_seconds": 300,
+        "agent_name": null,
+        "working_dir": null
+    },
+    "apps": [
+        {
+            "name": "i_educar",
+            "port": 8080,
+            "start_script": "examples/i_educar/start.sh"
+        },
+        {
+            "name": "crm",
+            "port": 8080,
+            "start_script": "examples/crm/start.sh"
+        },
+        {
+            "name": "admidio",
+            "port": 3100,
+            "start_script": "examples/admidio/start.sh"
+        },
+        {
+            "name": "torrentpier",
+            "port": 3200,
+            "start_script": "examples/torrentpier/start.sh"
+        }
+    ]
+}

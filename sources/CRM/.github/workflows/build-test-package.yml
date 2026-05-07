@@ -1,0 +1,285 @@
+name: Build, Test and Package
+
+on:
+  pull_request:
+    branches:    
+      - master
+      - develop
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+  push:
+    branches:
+    - master
+    - develop
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+
+jobs:
+  test-n-package:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20.x']
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        # fetch full history so things like auto-changelog work properly
+        fetch-depth: 0
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        # setting a registry enables the NODE_AUTH_TOKEN env variable where we can set an npm token.  REQUIRED
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Declare some variables
+      id: vars
+      shell: bash
+      run: |
+        # Extract branch name and sanitize for artifact naming
+        branch_name="${GITHUB_REF#refs/heads/}"
+        # For pull requests, use a cleaner name
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          branch_name="pr-${{ github.event.number }}"
+        fi
+        # Replace invalid characters for artifact names
+        safe_branch=$(echo "$branch_name" | sed 's/[\/\\<>:"|?*]/-/g')
+        echo "branch=$branch_name" >> $GITHUB_OUTPUT
+        echo "safe_branch=$safe_branch" >> $GITHUB_OUTPUT
+
+    - name: get-npm-version
+      id: package-version
+      uses: martinbeentjes/npm-get-version-action@v1.3.1
+
+    - name: Get Env Ready
+      run: |
+        npm ci
+
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: |
+        cd src
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Build App
+      run: |
+        npm run package
+
+    - name: Run Docker
+      run: |
+        npm run docker:ci:start
+        docker compose -f docker/docker-compose.test-php8-apache.yaml ps -a
+        docker compose -f docker/docker-compose.test-php8-apache.yaml logs
+
+    - name: Test Server
+      run: |
+          curl -vvv http://127.0.0.1/api/public/echo
+          docker compose -f docker/docker-compose.test-php8-apache.yaml ps -a
+          docker compose -f docker/docker-compose.test-php8-apache.yaml logs
+
+    - name: Run Cypress Tests
+      run: |
+        npm run test
+
+    - name: Upload Cypress Reports on Failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-reports-${{ steps.vars.outputs.safe_branch }}
+        path: cypress/reports/
+        retention-days: 30
+        if-no-files-found: ignore
+
+    - name: Stop Docker
+      run: |
+        npm run docker:ci:down
+
+    - name: List build artifacts
+      run: |
+        echo "📦 Build artifacts created:"
+        if [ -d "temp" ]; then
+          ls -la temp/
+          echo ""
+          echo "📊 File sizes:"
+          du -h temp/*
+        else
+          echo "❌ No target directory found"
+          exit 1
+        fi
+  
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: >-
+          ${{ github.ref == 'refs/heads/master' && 
+              format('ChurchCRM-{0}', steps.package-version.outputs.current-version) ||
+              (github.event_name == 'pull_request' && 
+               format('ChurchCRM-{0}-PR{1}', steps.package-version.outputs.current-version, github.event.number) ||
+               format('ChurchCRM-{0}-{1}', steps.package-version.outputs.current-version, steps.vars.outputs.safe_branch)) }}
+        path: temp/ChurchCRM-*.zip
+        retention-days: 90
+        if-no-files-found: error
+
+    - name: Check for source code changes
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      id: src-changes
+      run: |
+        echo "Checking for changes in /src directory..."
+        
+        # Get the list of changed files in this push
+        changed_files=$(git diff --name-only ${{ github.event.before }}..${{ github.sha }})
+        echo "Changed files:"
+        echo "$changed_files"
+        
+        # Check if any files in src/ directory were changed
+        src_changes=$(echo "$changed_files" | grep '^src/' | wc -l)
+        
+        if [ "$src_changes" -gt 0 ]; then
+          echo "✅ Found $src_changes changes in /src directory"
+          echo "create_release=true" >> $GITHUB_OUTPUT
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_files" | grep '^src/' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        else
+          echo "ℹ️ No changes found in /src directory - skipping release"
+          echo "create_release=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Verify release files before creating draft
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push' && steps.src-changes.outputs.create_release == 'true'
+      run: |
+        echo "📋 Verifying files for draft release..."
+        if [ -d "temp" ]; then
+          echo "✅ Temp directory exists"
+          ls -la temp/
+          
+          # Find the zip file that will be attached
+          zip_files=$(find temp -name "ChurchCRM-*.zip" -type f)
+          if [ -n "$zip_files" ]; then
+            echo "✅ Found zip files to attach:"
+            for zip_file in $zip_files; do
+              file_size=$(ls -lh "$zip_file" | awk '{print $5}')
+              echo "  📦 $(basename "$zip_file") ($file_size)"
+            done
+          else
+            echo "❌ No ChurchCRM-*.zip files found in temp directory!"
+            exit 1
+          fi
+        else
+          echo "❌ Temp directory does not exist!"
+          exit 1
+        fi
+
+    - name: Create Draft Release (on master with src changes)
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push' && steps.src-changes.outputs.create_release == 'true'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.package-version.outputs.current-version }}
+        name: ChurchCRM v${{ steps.package-version.outputs.current-version }}
+        body: |
+          ## ChurchCRM Release v${{ steps.package-version.outputs.current-version }}
+          
+          ### 📦 Downloads
+          - **ChurchCRM-${{ steps.package-version.outputs.current-version }}.zip** - Complete installation package (attached below)
+          
+          ### 🚀 Installation
+          1. Download the zip file from the "Assets" section below
+          2. Extract to your web server directory
+          3. Follow the [installation guide](https://github.com/ChurchCRM/CRM/wiki/Installation)
+          
+          ### 📝 Changes in /src Directory
+          <!-- TODO: Add detailed release notes here before publishing -->
+          
+          **Files changed in this release:**
+          ```
+          ${{ steps.src-changes.outputs.changed_files }}
+          ```
+          
+          **Commit:** ${{ github.sha }}
+          
+          For detailed changes, see the [CHANGELOG.md](https://github.com/ChurchCRM/CRM/blob/master/CHANGELOG.md) or [compare with previous release](https://github.com/ChurchCRM/CRM/compare/v${{ steps.package-version.outputs.current-version }}).
+          
+          ### ✅ Testing
+          - ✅ All automated tests passed
+          - ✅ Build completed successfully
+          - ✅ Docker integration tests passed
+          - ✅ Cypress end-to-end tests passed
+          
+          ---
+          *Built automatically from commit ${{ github.sha }}*
+          
+          **Note:** This is a draft release. Review the changes above and publish when ready.
+        files: temp/ChurchCRM-*.zip
+        draft: true
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**📦 Version:** ${{ steps.package-version.outputs.current-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**🌿 Branch:** ${{ steps.vars.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+        echo "**📝 Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Add test failure debug info
+        if [ "${{ job.status }}" = "failure" ]; then
+          echo "## ❌ Test Failure Debug Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The following debug artifacts have been uploaded to help troubleshoot test failures:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "-  **cypress-reports-${{ steps.vars.outputs.safe_branch }}** - Detailed test reports and results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**💡 Quick Debug Tips:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download and review the Cypress reports for detailed error messages and stack traces" >> $GITHUB_STEP_SUMMARY
+          echo "2. Check the mochawesome report for a visual breakdown of test results" >> $GITHUB_STEP_SUMMARY
+          echo "3. Look for specific test names and failure reasons in the reports" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -d "temp" ]; then
+          echo "**📦 Artifacts Created:**" >> $GITHUB_STEP_SUMMARY
+          for file in temp/ChurchCRM-*.zip; do
+            if [ -f "$file" ]; then
+              size=$(ls -lh "$file" | awk '{print $5}')
+              echo "- 📄 \`$(basename "$file")\` ($size)" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ github.ref }}" = "refs/heads/master" ] && [ "${{ github.event_name }}" = "push" ]; then
+          echo "**� Draft Release Created:** [v${{ steps.package-version.outputs.current-version }}](https://github.com/ChurchCRM/CRM/releases/tag/v${{ steps.package-version.outputs.current-version }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**📋 Next Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go to [Releases](https://github.com/ChurchCRM/CRM/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Edit the draft release notes" >> $GITHUB_STEP_SUMMARY
+          echo "3. Add changelog entries" >> $GITHUB_STEP_SUMMARY
+          echo "4. Publish the release when ready" >> $GITHUB_STEP_SUMMARY
+        else
+          artifact_name="${{ github.ref == 'refs/heads/master' && 
+                             format('ChurchCRM-{0}', steps.package-version.outputs.current-version) ||
+                             (github.event_name == 'pull_request' && 
+                              format('ChurchCRM-{0}-PR{1}', steps.package-version.outputs.current-version, github.event.number) ||
+                              format('ChurchCRM-{0}-{1}', steps.package-version.outputs.current-version, steps.vars.outputs.safe_branch)) }}"
+          echo "**📥 Download Artifact:** $artifact_name" >> $GITHUB_STEP_SUMMARY
+        fi

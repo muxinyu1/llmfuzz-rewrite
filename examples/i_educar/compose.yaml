@@ -1,0 +1,111 @@
+name: ieducar
+
+# 所有镜像均来自阿里云 ACR，无需 docker login 即可拉取（需确保镜像设为公开）
+# 首次启动：docker compose up -d
+# 首次初始化（建表+填充数据，仅需执行一次）：docker compose --profile setup run --rm init
+
+x-app-env: &app-env
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: http://localhost:8080
+  # 生产环境请替换为随机密钥：openssl rand -base64 32
+  APP_KEY: "base64:y/Zcfc7uXNmq1DoHYqiTnL04sta0mbhAP/d09/HOgUE="
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_DATABASE: ieducar
+  DB_USERNAME: ieducar
+  DB_PASSWORD: ieducar
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
+  QUEUE_CONNECTION: redis
+
+x-app: &app
+  image: crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub:ieducar-2.10.0
+  environment:
+    <<: *app-env
+  volumes:
+    - ieducar_storage:/var/www/ieducar/storage
+    - ieducar_cache:/var/www/ieducar/bootstrap/cache
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *app
+    container_name: ieducar-app
+    ports:
+      - "8080:80"
+
+  horizon:
+    <<: *app
+    container_name: ieducar-horizon
+    command: ["php", "artisan", "horizon"]
+    profiles: ["queue"]
+
+  # 首次部署执行一次：docker compose --profile setup run --rm init
+  init:
+    <<: *app
+    container_name: ieducar-init
+    command:
+      - sh
+      - -lc
+      - |
+        php artisan storage:link --ansi
+        php artisan migrate --force --ansi
+        php artisan db:seed --force --ansi
+    restart: "no"
+    profiles: ["setup"]
+
+  postgres:
+    container_name: ieducar-postgres
+    image: crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub:postgres-17-rev-ping
+    environment:
+      POSTGRES_DB: ieducar
+      POSTGRES_USER: ieducar
+      POSTGRES_PASSWORD: ieducar
+      PGUSER: ieducar
+      # rev_ping() 回调目标：宿主机上运行的 verifier HTTP 监听端口
+      HOST: ${VERIFIER_HOST:-host.docker.internal}
+      VERIFIER_PORT: ${VERIFIER_PORT:-8000}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ieducar -d ieducar"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    container_name: ieducar-redis
+    image: crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub:redis-8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  ieducar_storage:
+  ieducar_cache:

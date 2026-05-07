@@ -1,0 +1,84 @@
+FROM php:8-apache
+
+ARG APT_MIRROR=mirrors.tuna.tsinghua.edu.cn
+
+LABEL maintainer="churchcrm"
+
+EXPOSE 80
+
+RUN set -eux; \
+        if [ -f /etc/apt/sources.list ]; then \
+            sed -i \
+                -e "s|http://deb.debian.org/debian|https://${APT_MIRROR}/debian|g" \
+                -e "s|https://deb.debian.org/debian|https://${APT_MIRROR}/debian|g" \
+                -e "s|http://deb.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|https://deb.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|http://security.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|https://security.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                /etc/apt/sources.list; \
+        fi; \
+        if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+            sed -i \
+                -e "s|http://deb.debian.org/debian|https://${APT_MIRROR}/debian|g" \
+                -e "s|https://deb.debian.org/debian|https://${APT_MIRROR}/debian|g" \
+                -e "s|http://deb.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|https://deb.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|http://security.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                -e "s|https://security.debian.org/debian-security|https://${APT_MIRROR}/debian-security|g" \
+                /etc/apt/sources.list.d/debian.sources; \
+        fi; \
+        apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        gettext \
+        git \
+        gnupg \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libxml2-dev \
+        libzip-dev \
+        locales \
+        locales-all \
+        make \
+        nodejs \
+        npm \
+        python3 \
+        unzip && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install -j"$(nproc)" xml exif pdo_mysql gettext iconv mysqli zip bcmath intl && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install -j"$(nproc)" gd
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+WORKDIR /opt/churchcrm
+COPY . /opt/churchcrm
+
+RUN npm ci && \
+    npm run build:js && \
+    npm run sass:build
+
+RUN cd /opt/churchcrm/src && \
+    composer validate --no-check-publish && \
+    composer install --no-dev --no-interaction --optimize-autoloader
+
+COPY ./docker/apache/default.conf /etc/apache2/apache2.conf
+RUN a2enmod rewrite
+
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+    sed -i 's/^upload_max_filesize.*$/upload_max_filesize = 2G/g' "$PHP_INI_DIR/php.ini" && \
+    sed -i 's/^post_max_size.*$/post_max_size = 2G/g' "$PHP_INI_DIR/php.ini" && \
+    sed -i 's/^memory_limit.*$/memory_limit = 2G/g' "$PHP_INI_DIR/php.ini" && \
+    sed -i 's/^max_execution_time.*$/max_execution_time = 120/g' "$PHP_INI_DIR/php.ini"
+
+RUN rm -rf /var/www/html/* && \
+    cp -a /opt/churchcrm/src/. /var/www/html/ && \
+    cp /opt/churchcrm/docker/Config.php /var/www/html/Include/Config.php && \
+    mkdir -p /var/www/html/logs && \
+    chown -R www-data:www-data /var/www/html
+
+WORKDIR /var/www/html

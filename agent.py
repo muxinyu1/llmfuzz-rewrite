@@ -8,5 +8,5 @@ from llm import LLM
 
 class Agent(ABC):
     @abstractmethod
-    def attack(self, args: Any | None):
+    def attack(self, prompt: str):
         pass

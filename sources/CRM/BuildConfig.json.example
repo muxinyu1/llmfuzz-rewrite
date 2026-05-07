@@ -1,0 +1,23 @@
+{
+    "POEditor": {
+        "id": "77079",
+        "token": ""
+    },
+    "GitHub": {
+        "token": ""
+    },
+    "demoKey": "",
+    "Env": {
+            "local": {
+                "server": "localhost",
+                "database": {
+                    "server": "localhost",
+                    "port" : "3306",
+                    "database": "churchcrm",
+                    "user":"churchcrm",
+                    "password": "changeme"
+                },
+                "admin-api-key": ""
+            }
+        }
+}
