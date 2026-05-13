@@ -1,0 +1,21 @@
+//
+// Configuration
+//
+
+#pmf-admin-configuration-container {
+  a.nav-link.active {
+    background: $light-bg-subtle;
+  }
+  .tab-content {
+    color: $black;
+    padding: 5px 15px;
+    border-bottom: 1px;
+  }
+}
+
+.pmf-configuration-panel {
+  background: $light-bg-subtle;
+  border-left: 1px solid $border-color;
+  border-right: 1px solid $border-color;
+  border-bottom: 1px solid;
+}

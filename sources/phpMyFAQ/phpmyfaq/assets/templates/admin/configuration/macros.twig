@@ -1,0 +1,141 @@
+
+{# Macros #}
+
+{# input type=checkbox #}
+{% macro generateCheckbox(label, key, config, special, description) %}
+  {% set checked = config[key] == 'true' ? ' checked' : '' %}
+
+  {% set disabled = '' %}
+  {% if key == 'ldap.ldapSupport' and special.ldapSupport != 1 %}
+    {% set disabled = ' disabled' %}
+  {% elseif key in ['security.useSslForLogins', 'security.useSslOnly'] and special.useSslForLogins != 1 and special.useSslOnly != 1 %}
+    {% set disabled = ' disabled' %}
+  {% elseif key == 'security.ssoSupport' and special.ssoSupport != 1 %}
+    {% set disabled = ' disabled' %}
+  {% endif %}
+  <div class="offset-3 col-6">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="edit[{{ key }}]" id="edit[{{ key }}]" value="true"{{ checked }}{{ disabled }}>
+      <label class="form-check-label" for="edit[{{ key }}]">{{ label | raw }}</label>
+      {% if description != '' %}
+      <br><span class="form-text">{{ description }}</span>
+      {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+
+
+{# input type=password #}
+{% macro generatePasswordInput(label, key, value, description) %}
+  <label for="edit[{{ key }}]" class="col-3 col-form-label small mb-1 text-end">
+    {{ label | raw }}<br>
+    <span class="form-text">{{ description }}</span>
+  </label>
+  <div class="col-6">
+    <input class="form-control" type="password" autocomplete="off" name="edit[{{ key }}]"
+           value="{{ value|e('html_attr') }}" data-pmf-toggle="instances_password_toggle">
+  </div>
+{% endmacro %}
+
+
+
+{# input type=text, email, url #}
+{% macro generateInputGroup(label, key, config, description) %}
+  {% set value = config[key] | replace({'"': '&quot;'}) %}
+
+  {% set type = {
+    'main.administrationMail': 'email',
+    'main.referenceURL': 'url',
+    'main.privacyURL': 'url',
+    'records.maxAttachmentSize': 'number',
+    'records.numberOfRecordsPerPage': 'number',
+    'records.numberOfShownNewsEntries': 'number',
+    'records.numberOfRelatedArticles': 'number',
+    'search.numberSearchTerms': 'number',
+    'mail.remoteSMTPPort': 'number',
+    'ldap.ldap_options.LDAP_OPT_PROTOCOL_VERSION': 'number',
+    'ldap.ldap_options.LDAP_OPT_REFERRALS': 'number',
+  }[key] | default('text') %}
+
+  <label for="edit[{{ key }}]" class="col-3 col-form-label small mb-1 text-end">
+    {{ label | raw }}<br>
+    <span class="form-text">{{ description }}</span>
+  </label>
+  <div class="col-6">
+    <div class="input-group">
+      <input class="form-control" type="{{ type }}" name="edit[{{ key }}]" id="edit[{{ key }}]"
+             value="{{ value|e('html_attr') }}" step="1" min="0">
+    {% if key == 'api.apiClientToken' %}
+      <div class="input-group-append">
+        <button class="btn btn-dark" id="pmf-generate-api-token" type="button" onclick="generateApiToken()">
+          {{ 'msgGenerateApiClientToken' | translate }}
+        </button>
+      </div>
+    {% endif %}
+    </div>
+  </div>
+{% endmacro %}
+
+
+
+{# button #}
+{% macro sendTestMailButton(label, key, description) %}
+  <label for="edit[{{ key }}]" class="col-3 col-form-label small mb-1 text-end">
+    {{ label | raw }}<br>
+    <span class="form-text">{{ description }}</span>
+  </label>
+  <div class="col-3">
+    <button type="button" class="btn btn-primary" id="btn-phpmyfaq-{{ key|replace({'.': '-'}) }}"
+            onclick="handleSendTestMail()">
+      {{ key | translate }}
+    </button>
+  </div>
+{% endmacro %}
+
+
+
+{# textarea #}
+{% macro generateTextarea(label, key, value, description) %}
+  <label for="edit[{{ key }}]" class="col-3 col-form-label small mb-1 text-end">
+    {{ label | raw }}<br>
+    <span class="form-text">{{ description }}</span>
+  </label>
+  <div class="col-6">
+    <textarea id="edit[{{ key }}]" name="edit[{{ key }}]" rows="4" class="form-control" spellcheck="false">{{ value|e }}</textarea>
+  </div>
+{% endmacro %}
+
+
+
+{# input type=text readonly #}
+{% macro readOnlyTextInput(label, key, config, description) %}
+  {% set value = config[key] | replace({'"': '&quot;'}) %}
+
+  <label for="edit[{{ key }}]" class="col-3 col-form-label small mb-1 text-end">
+    {{ label | raw }}<br>
+    <span class="form-text">{{ description }}</span>
+  </label>
+  <div class="col-3">
+    <input id="edit[{{ key }}]" type="text" readonly name="edit[{{ key }}]" class="form-control-plaintext"
+           value="{{ value|e('html_attr') }}">
+  </div>
+{% endmacro %}
+
+
+
+{% macro generateSelectBox(label, key, config, description) %}
+  {% set value = config[key] | replace({'"': '&quot;'}) %}
+
+  <label for="edit[{{ key }}]" class="col-3 col-form-label mb-1 text-end">
+    {{ label | raw }}
+    {% if description != '' %}
+      <br><span class="form-text">{{ description }}</span>
+    {% endif %}
+  </label>
+  <div class="col-3">
+    <select id="edit[{{ key }}]" name="edit[{{ key }}]" class="form-select"
+            data-pmf-configuration-current-value="{{ value|e('html_attr') }}">
+    </select>
+  </div>
+{% endmacro %}

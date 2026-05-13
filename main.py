@@ -7,8 +7,12 @@ from agents.opencode import OpenCodeAgent
 from container import ContainerManager
 from verifier import Verifier
 from verifiers.admidio_verifier import AdmidioVerifier
+from verifiers.atomboard_verifier import AtomBoardVerifier
 from verifiers.crm_verifier import CRMVerifier
+from verifiers.cloudlog_verifier import CloudlogVerifier
 from verifiers.i_educar_verifier import IEduVerifier
+from verifiers.mylittleforum_verifier import MyLittleForumVerifier
+from verifiers.phpmyfaq_verifier import PhpMyFAQVerifier
 from verifiers.torrentpier_verifier import TorrentPierVerifier
 
 
@@ -82,6 +86,38 @@ def _resolve_components(app_name: str) -> tuple[Path, type[Verifier], list[Path]
             [
                 Path("sources/torrentpier"),
                 Path("examples/torrentpier"),
+            ],
+        ),
+        "phpmyfaq": (
+            Path("prompts/phpmyfaq.md"),
+            PhpMyFAQVerifier,
+            [
+                Path("sources/phpMyFAQ"),
+                Path("examples/phpmyfaq"),
+            ],
+        ),
+        "mylittleforum": (
+            Path("prompts/mylittleforum.md"),
+            MyLittleForumVerifier,
+            [
+                Path("sources/mylittleforum"),
+                Path("examples/mylittleforum"),
+            ],
+        ),
+        "cloudlog": (
+            Path("prompts/cloudlog.md"),
+            CloudlogVerifier,
+            [
+                Path("sources/cloudlog"),
+                Path("examples/cloudlog"),
+            ],
+        ),
+        "atomboard": (
+            Path("prompts/atomboard.md"),
+            AtomBoardVerifier,
+            [
+                Path("sources/atomboard"),
+                Path("examples/atomboard"),
             ],
         ),
     }

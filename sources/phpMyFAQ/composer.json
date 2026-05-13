@@ -1,0 +1,106 @@
+{
+  "name": "thorsten/phpmyfaq",
+  "description": "FAQ System",
+  "keywords": [
+    "phpMyFAQ",
+    "FAQ"
+  ],
+  "homepage": "https://www.phpmyfaq.de",
+  "license": "MPL-2.0",
+  "type": "application",
+  "authors": [
+    {
+      "name": "Thorsten Rinne",
+      "email": "thorsten@phpmyfaq.de"
+    }
+  ],
+  "require": {
+    "php": ">=8.2.0",
+    "ext-curl": "*",
+    "ext-fileinfo": "*",
+    "ext-filter": "*",
+    "ext-gd": "*",
+    "ext-json": "*",
+    "ext-sodium": "*",
+    "ext-xml": "*",
+    "ext-xmlwriter": "*",
+    "ext-zip": "*",
+    "2tvenom/cborencode": "^1.0",
+    "elasticsearch/elasticsearch": "8.*",
+    "endroid/qr-code": "^6.0.2",
+    "guzzlehttp/guzzle": "^7.5",
+    "league/commonmark": "^2.4",
+    "monolog/monolog": "^3.3",
+    "myclabs/deep-copy": "~1.0",
+    "phpseclib/phpseclib": "~3.0",
+    "robthree/twofactorauth": "^3.0.0",
+    "symfony/config": "^7.1",
+    "symfony/dependency-injection": "^7.1",
+    "symfony/event-dispatcher": "^7.1",
+    "symfony/html-sanitizer": "^7.0",
+    "symfony/http-client": "^7.0",
+    "symfony/http-foundation": "^7.0",
+    "symfony/http-kernel": "^7.0",
+    "symfony/mailer": "^7.0",
+    "symfony/routing": "^7.0",
+    "tecnickcom/tcpdf": "~6.0",
+    "tivie/htaccess-parser": "0.3.0",
+    "twig/intl-extra": "^3.10",
+    "twig/twig": "^3.10"
+  },
+  "require-dev": {
+    "doctrine/instantiator": "2.*",
+    "mikey179/vfsstream": "^1.6",
+    "phpdocumentor/reflection-docblock": "5.*",
+    "phpmd/phpmd" : "@stable",
+    "phpstan/phpstan": "^1.0.0",
+    "phpunit/phpunit": "11.*",
+    "rector/rector": "^1.0.0",
+    "squizlabs/php_codesniffer": "3.*",
+    "symfony/yaml": "7.*",
+    "zircote/swagger-php": "^4.8"
+  },
+  "suggest": {
+    "ext-ldap": "*",
+    "ext-openssl": "*",
+    "ext-pgsql": "*",
+    "ext-sqlite3": "*",
+    "ext-sqlsrv": "*"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2.0"
+    },
+    "secure-http": true,
+    "vendor-dir": "phpmyfaq/src/libs",
+    "bin-dir": "phpmyfaq/src/libs/bin",
+    "allow-plugins": {
+      "php-http/discovery": true
+    },
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "phpMyFAQ\\": "./phpmyfaq/src/phpMyFAQ"
+    }
+  },
+  "minimum-stability": "stable",
+  "scripts": {
+    "check": "./phpmyfaq/src/libs/bin/phpstan analyse -c phpstan.neon --memory-limit 1G",
+    "lint": "./phpmyfaq/src/libs/bin/phpcs --standard=PSR12 --extensions=php --ignore=./phpmyfaq/src/libs/* ./phpmyfaq/src/phpMyFAQ",
+    "lint-fix": "./phpmyfaq/src/libs/bin/phpcbf --standard=PSR12 --extensions=php --ignore=./phpmyfaq/src/libs/* ./phpmyfaq/src/phpMyFAQ",
+    "openapi:json": "./phpmyfaq/src/libs/bin/openapi -b ./phpmyfaq/src/libs/autoload.php -f json ./phpmyfaq/src/phpMyFAQ -o docs/openapi.json",
+    "openapi:yaml": "./phpmyfaq/src/libs/bin/openapi -b ./phpmyfaq/src/libs/autoload.php ./phpmyfaq/src/phpMyFAQ -o docs/openapi.yaml",
+    "phpstan": "./phpmyfaq/src/libs/bin/phpstan analyze --memory-limit=4G",
+    "phpmd": "./phpmyfaq/src/libs/bin/phpmd ./phpmyfaq/src/phpMyFAQ html rulesets.xml > phpmd.html",
+    "refactor": "./phpmyfaq/src/libs/bin/rector",
+    "refactor:dryrun": "./phpmyfaq/src/libs/bin/rector --dry-run",
+    "test": "./phpmyfaq/src/libs/bin/phpunit --coverage-text"
+  },
+  "support": {
+    "docs": "https://phpmyfaq.readthedocs.io/",
+    "forum": "https://forum.phpmyfaq.de/",
+    "issues": "https://github.com/thorsten/phpMyFAQ/issues",
+    "source": "https://github.com/thorsten/phpMyFAQ"
+  }
+}

@@ -1,0 +1,42 @@
+services:
+  cloudlog:
+    image: ${REGISTRY_IMAGE_PREFIX:-crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub}:${CLOUDLOG_IMAGE_TAG:-cloudlog-2.7.5}
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - ${CLOUDLOG_ENV_FILE:-.env}
+    ports:
+      - "${CLOUDLOG_HTTP_PORT:-3500}:80"
+    volumes:
+      - ../../sources/cloudlog:/var/www/html
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  database:
+    image: ${REGISTRY_IMAGE_PREFIX:-crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub}:${MARIADB_IMAGE_TAG:-mariadb-10.11-revping}
+    restart: unless-stopped
+    env_file:
+      - ${CLOUDLOG_ENV_FILE:-.env}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cloudlog}
+      MYSQL_USER: ${MYSQL_USER:-cloudlog}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-cloudlogpassword}
+      VERIFIER_HOST: ${VERIFIER_HOST:-host.docker.internal}
+      HOST: ${VERIFIER_HOST:-host.docker.internal}
+      VERIFIER_PORT: ${VERIFIER_PORT:-8000}
+    volumes:
+      - cloudlog_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+volumes:
+  cloudlog_db_data:

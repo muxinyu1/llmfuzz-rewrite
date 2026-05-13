@@ -1,0 +1,33 @@
+//
+// Top navigation
+//
+
+.pmf-admin-topnav {
+  padding-left: 0;
+  height: $pmf-admin-topnav-base-height;
+  z-index: $pmf-admin-zindex-topnav;
+  color: $white;
+
+  .navbar-brand {
+    width: $pmf-admin-sidenav-base-width;
+    padding-left: $navbar-padding-x;
+    padding-right: $navbar-padding-x;
+    margin: 0;
+  }
+
+  &.navbar-dark {
+    #sidebarToggle {
+      color: $pmf-admin-topnav-dark-toggler-color;
+    }
+  }
+
+  &.navbar-light {
+    #sidebarToggle {
+      color: $pmf-admin-topnav-light-toggler-color;
+    }
+  }
+
+  .nav-link {
+    color: $white;
+  }
+}

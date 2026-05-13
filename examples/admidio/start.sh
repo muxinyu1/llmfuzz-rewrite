@@ -93,8 +93,29 @@ cd "${SCRIPT_DIR}"
 # shellcheck source=/dev/null
 source "${ENV_FILE}"
 
-echo "==> Pull images"
-docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" pull
+echo "==> Pull images (fallback to local build if unavailable)"
+if ! docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" pull; then
+  echo "==> Remote image pull failed, building images locally"
+
+  : "${REGISTRY_IMAGE_PREFIX:=crpi-8tnv6lve87c20oxm.cn-beijing.personal.cr.aliyuncs.com/llmfuzz/llmfuzz-dockerhub}"
+  : "${ADMIDIO_IMAGE_TAG:=admidio-4.3.16}"
+  : "${MARIADB_IMAGE_TAG:=mariadb-10.11-revping}"
+
+  APP_IMAGE="${REGISTRY_IMAGE_PREFIX}:${ADMIDIO_IMAGE_TAG}"
+  DB_IMAGE="${REGISTRY_IMAGE_PREFIX}:${MARIADB_IMAGE_TAG}"
+  DB_DOCKERFILE="${SOURCE_DIR}/install/docker/mariadb-revping/Dockerfile"
+
+  if [[ ! -f "${DB_DOCKERFILE}" ]]; then
+    echo "DB Dockerfile not found: ${DB_DOCKERFILE}" >&2
+    exit 1
+  fi
+
+  echo "==> Build app image: ${APP_IMAGE}"
+  docker build -t "${APP_IMAGE}" "${SOURCE_DIR}"
+
+  echo "==> Build database image: ${DB_IMAGE}"
+  docker build -f "${DB_DOCKERFILE}" -t "${DB_IMAGE}" "${SOURCE_DIR}"
+fi
 
 echo "==> Start containers"
 docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d
@@ -122,29 +143,58 @@ if [[ ${db_ready} -ne 1 ]]; then
 fi
 
 echo "==> Check whether demo schema is initialized"
-BOOTSTRAPPED="$(docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T \
+BOOTSTRAPPED_TABLE="$(docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T \
   database mariadb -uroot -p"${ADMIDIO_DB_ROOT_PASSWORD}" -Nse \
   "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${ADMIDIO_DB_NAME}' AND table_name='${ADMIDIO_DB_TABLE_PREFIX}_users';" \
   2>/dev/null || true)"
-BOOTSTRAPPED="${BOOTSTRAPPED//$'\r'/}"
-BOOTSTRAPPED="${BOOTSTRAPPED//$'\n'/}"
+BOOTSTRAPPED_TABLE="${BOOTSTRAPPED_TABLE//$'\r'/}"
+BOOTSTRAPPED_TABLE="${BOOTSTRAPPED_TABLE//$'\n'/}"
+BOOTSTRAPPED_TABLE="$(echo "${BOOTSTRAPPED_TABLE}" | tr -d '[:space:]')"
 
-if [[ "${BOOTSTRAPPED}" != "1" ]]; then
+BOOTSTRAPPED_USER="0"
+if [[ "${BOOTSTRAPPED_TABLE}" == "1" ]]; then
+  BOOTSTRAPPED_USER=""
+  for attempt in {1..10}; do
+    BOOTSTRAPPED_USER="$(docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T \
+      database mariadb -uroot -p"${ADMIDIO_DB_ROOT_PASSWORD}" "${ADMIDIO_DB_NAME}" -Nse \
+      "SELECT COUNT(*) FROM ${ADMIDIO_DB_TABLE_PREFIX}_users WHERE usr_login_name IS NOT NULL;" \
+      2>/dev/null || true)"
+    BOOTSTRAPPED_USER="${BOOTSTRAPPED_USER//$'\r'/}"
+    BOOTSTRAPPED_USER="${BOOTSTRAPPED_USER//$'\n'/}"
+    BOOTSTRAPPED_USER="$(echo "${BOOTSTRAPPED_USER}" | tr -d '[:space:]')"
+
+    if [[ "${BOOTSTRAPPED_USER}" =~ ^[0-9]+$ ]]; then
+      break
+    fi
+    sleep 1
+  done
+fi
+
+echo "==> Bootstrap status: table=${BOOTSTRAPPED_TABLE:-0}, admin=${BOOTSTRAPPED_USER:-0}"
+
+if [[ "${BOOTSTRAPPED_TABLE}" != "1" || ! "${BOOTSTRAPPED_USER}" =~ ^[1-9][0-9]*$ ]]; then
   echo "==> Import Admidio demo schema/data into ${ADMIDIO_DB_NAME}"
   tmp_db_sql="$(mktemp)"
   tmp_data_sql="$(mktemp)"
-  trap 'rm -f "${tmp_db_sql}" "${tmp_data_sql}"' EXIT
+  tmp_all_sql="$(mktemp)"
+  trap 'rm -f "${tmp_db_sql}" "${tmp_data_sql}" "${tmp_all_sql}"' EXIT
 
   sed "s/%PREFIX%/${ADMIDIO_DB_TABLE_PREFIX}/g" "${DEMO_DB_SQL}" > "${tmp_db_sql}"
   sed "s/%PREFIX%/${ADMIDIO_DB_TABLE_PREFIX}/g" "${DEMO_DATA_SQL}" > "${tmp_data_sql}"
 
-  docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T \
-    database mariadb -uroot -p"${ADMIDIO_DB_ROOT_PASSWORD}" "${ADMIDIO_DB_NAME}" < "${tmp_db_sql}"
+  {
+    echo "SET FOREIGN_KEY_CHECKS=0;"
+    echo "SET UNIQUE_CHECKS=0;"
+    cat "${tmp_db_sql}"
+    cat "${tmp_data_sql}"
+    echo "SET UNIQUE_CHECKS=1;"
+    echo "SET FOREIGN_KEY_CHECKS=1;"
+  } > "${tmp_all_sql}"
 
   docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T \
-    database mariadb -uroot -p"${ADMIDIO_DB_ROOT_PASSWORD}" "${ADMIDIO_DB_NAME}" < "${tmp_data_sql}"
+    database mariadb -uroot -p"${ADMIDIO_DB_ROOT_PASSWORD}" "${ADMIDIO_DB_NAME}" < "${tmp_all_sql}"
 
-  rm -f "${tmp_db_sql}" "${tmp_data_sql}"
+  rm -f "${tmp_db_sql}" "${tmp_data_sql}" "${tmp_all_sql}"
   trap - EXIT
 else
   echo "==> Demo schema already present, skip full import"
@@ -183,8 +233,27 @@ docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T database \
          SET rol_uuid='${STATIC_ROLE_UUID_SQL}'
        WHERE rol_id=1;"
 
+echo "==> Disable calendar plugin queries for stable overview page"
+docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" exec -T admidio sh -eu -c '
+cat > /opt/app-root/src/adm_plugins/calendar/config.php <<"EOF"
+<?php
+$plg_ter_aktiv = 0;
+$plg_geb_aktiv = 0;
+EOF
+'
+
 echo "==> Verify login page token availability"
-if ! curl -fsSL --max-time 20 "http://localhost:${ADMIDIO_HTTP_PORT}/adm_program/overview.php" | grep -q "admidio-csrf-token"; then
+token_ready=0
+for attempt in {1..30}; do
+  page_content="$(curl -fsSL --max-time 20 "http://localhost:${ADMIDIO_HTTP_PORT}/adm_program/overview.php" 2>/dev/null || true)"
+  if [[ -n "${page_content}" ]] && grep -q "admidio-csrf-token" <<< "${page_content}"; then
+    token_ready=1
+    break
+  fi
+  sleep 2
+done
+
+if [[ ${token_ready} -ne 1 ]]; then
   echo "Admidio did not expose login CSRF token as expected" >&2
   exit 1
 fi

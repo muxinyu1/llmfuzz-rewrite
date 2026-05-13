@@ -1,6 +1,6 @@
 {
     "runtime": {
-        "selected_app": "torrentpier",
+        "selected_app": "crm",
         "use_container": true,
         "verifier_port": 8000,
         "verifier_host": "host.docker.internal"
@@ -33,6 +33,26 @@
             "name": "torrentpier",
             "port": 3200,
             "start_script": "examples/torrentpier/start.sh"
+        },
+        {
+            "name": "phpmyfaq",
+            "port": 3300,
+            "start_script": "examples/phpmyfaq/start.sh"
+        },
+        {
+            "name": "mylittleforum",
+            "port": 3400,
+            "start_script": "examples/mylittleforum/start.sh"
+        },
+        {
+            "name": "cloudlog",
+            "port": 3500,
+            "start_script": "examples/cloudlog/start.sh"
+        },
+        {
+            "name": "atomboard",
+            "port": 3600,
+            "start_script": "examples/atomboard/start.sh"
         }
     ]
 }

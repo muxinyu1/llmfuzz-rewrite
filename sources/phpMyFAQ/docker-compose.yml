@@ -1,0 +1,142 @@
+# Use this file for development only
+
+services:
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=iop
+      - MYSQL_DATABASE=phpmyfaq
+      - MYSQL_USER=phpmyfaq
+      - MYSQL_PASSWORD=phpmyfaq
+      - MYSQL_ROOT_HOST=%
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./volumes/mariadb:/var/lib/mysql
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_DB=phpmyfaq
+      - POSTGRES_USER=phpmyfaq
+      - POSTGRES_PASSWORD=phpmyfaq
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+
+  #sqlserver:
+  #  image: mcr.microsoft.com/mssql/server:2022-latest
+  #  ports:
+  #    - 1433:1433
+  #  environment:
+  #    SA_PASSWORD: 'phpMyFAQ-4.0'
+  #    ACCEPT_EULA: 'Y'
+
+  phpmyfaq:
+    build: .
+    container_name: phpmyfaq-40
+    restart: always
+    stdin_open: true
+    environment:
+      - PMF_DB_HOST=db
+      - PMF_DB_NAME=phpmyfaq
+      - PMF_DB_USER=phpmyfaq
+      - PMF_DB_PASS=phpmyfaq
+      - PMF_DISABLE_HTACCESS=""
+      - PMF_TIMEZONE="Europe/Berlin"
+      - PMF_ENABLE_UPLOADS="On"
+      - PMF_MEMORY_LIMIT="2048M" # only for development
+      - PHP_LOG_ERRORS="On"
+      - PHP_ERROR_REPORTING="E_ALL & E_DEPRECATED & E_STRICT" # Production Value: E_ALL & ~E_DEPRECATED & ~E_STRICT
+    links:
+      - mariadb:db
+      - postgres
+      - elasticsearch
+    ports:
+      - '8080:80'
+      - '443:443'
+    volumes:
+      - ./phpmyfaq:/var/www/html
+    depends_on:
+      - pnpm
+
+  pnpm:
+    image: node:20-alpine
+    restart: 'no'
+    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm build"
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app
+    depends_on:
+      - composer
+
+  composer:
+    image: composer:latest
+    restart: 'no'
+    command: composer install --verbose --ignore-platform-reqs
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/app
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    stdin_open: true
+    environment:
+      UPLOAD_LIMIT: 100M
+    links:
+      - mariadb:db
+    ports:
+      - '8000:80'
+    volumes:
+      - ./volumes/sessions:/sessions
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@phpmyfaq.de
+      PGADMIN_DEFAULT_PASSWORD: postgres
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - ./volumes/pgadmin:/root/.pgadmin
+    ports:
+      - '8008:80'
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: phpmyfaq-40_elasticsearch-v8
+    restart: always
+    environment:
+      - cluster.name=phpmyfaq-cluster
+      - _JAVA_OPTIONS=-XX:UseSVE=0
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    user: elasticsearch
+    command:
+      [
+        'sh',
+        '-c',
+        './bin/elasticsearch-plugin list | grep -q analysis-icu || ./bin/elasticsearch-plugin install analysis-icu && ./bin/elasticsearch',
+      ]
+    volumes:
+      - ./volumes/esdata:/usr/share/elasticsearch/data
+    ports:
+      - '9200:9200'
+      - '9300:9300'

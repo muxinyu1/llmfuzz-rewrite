@@ -1,0 +1,65 @@
+<form action="#" method="post" name="phpmyfaq-update-form" id="phpmyfaq-update-form" accept-charset="UTF-8"
+      enctype="application/x-www-form-urlencoded">
+  <input name="installed-version" id="phpmyfaq-update-installed-version" type="hidden" value="{{ installedVersion }}">
+  <input name="next-step" id="phpmyfaq-update-next-step" type="hidden" value="2">
+
+  <div class="row">
+    <div class="col">
+      <div class="alert alert-info text-center mt-2" role="alert">
+        <strong>
+          <i aria-hidden="true" class="bi bi-info-circle"></i>
+          Please create a full backup of your database, your templates,
+          attachments and uploaded images before running this update.
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <p>This update script will work <strong>only</strong> for the following versions:</p>
+      <ul>
+        <li>phpMyFAQ 3.0.x</li>
+        <li>phpMyFAQ 3.1.x</li>
+        <li>phpMyFAQ 3.2.x</li>
+        <li>phpMyFAQ 4.0.x</li>
+      </ul>
+    </div>
+    <div class="col">
+      <p>This update script <strong>will not</strong> work for the following versions:</p>
+      <ul>
+        <li>phpMyFAQ 0.x</li>
+        <li>phpMyFAQ 1.x</li>
+        <li>phpMyFAQ 2.x</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+
+      <div class="alert alert-success d-none" role="alert" id="phpmyfaq-update-check-success">
+        <h4 class="alert-heading">Well done!</h4>
+        <p>
+          Your phpMyFAQ installation check was successful. Please click on the button below to continue.
+        </p>
+      </div>
+
+      <div class="alert alert-danger d-none" role="alert" id="phpmyfaq-update-check-alert">
+        <h4 class="alert-heading">Heads up!</h4>
+        <div id="phpmyfaq-update-check-result"></div>
+        <a href="../admin/index.php" class="alert-link">Go back to the admin backend</a>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col d-flex justify-content-end">
+      <button class="btn btn-primary btn-next btn-lg disabled" type="button" id="phpmyfaq-update-next-step-button"
+              disabled>
+        Next update step
+      </button>
+    </div>
+  </div>
+</form>

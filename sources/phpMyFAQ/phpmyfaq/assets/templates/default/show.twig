@@ -1,0 +1,34 @@
+{% extends 'index.twig' %}
+
+{% block content %}
+<div class="row g-5">
+  <div class="col-md-8">
+    <h2 class="mb-4 border-bottom">{{ categoryHeader }}</h2>
+
+    {{ categoryContent | raw }}
+
+    <p>{{ categoryLevelUp | raw }}</p>
+  </div>
+
+  <div class="col-md-4">
+    <div class="position-sticky" style="top: 2rem">
+      <div class="p-4 mb-3 bg-light-subtle rounded border clearfix overflow-hidden">
+        {% if categoryImage is not empty %}
+          <img src="{{ categoryImage }}" alt="{{ categoryFaqsHeader }}" class="rounded img-fluid float-end m-1">
+        {% endif %}
+        <h4 class="fst-italic">{{ categoryFaqsHeader | raw }}</h4>
+        <p class="mb-0 small">{{ categoryDescription | raw }}</p>
+      </div>
+
+      {% if subCategoryContent != null %}
+      <div class="p-4 mb-3 bg-light-subtle rounded border">
+        <h4 class="fst-italic">{{ categorySubsHeader }}</h4>
+        {{ subCategoryContent | raw }}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

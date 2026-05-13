@@ -1,0 +1,103 @@
+# Eclipse folders and files
+.cache*
+.project
+.settings*
+.buildpath
+
+# PhpStorm/IntelliJ folder
+.idea*
+.run/*
+
+# Mac OS X crap
+.DS_Store
+
+# Builds
+build/*
+
+# Docker persistent data
+volumes/*
+
+# phpMyFAQ content folders
+phpmyfaq/content/core/config/database.php
+phpmyfaq/content/core/config/database.bak.php
+phpmyfaq/content/core/config/ldap.php
+phpmyfaq/content/core/config/ldap.bak.php
+phpmyfaq/content/core/config/elasticsearch.php
+phpmyfaq/content/core/config/elasticsearch.bak.php
+phpmyfaq/content/core/config/azure.php
+phpmyfaq/content/core/config/azure.bak.php
+phpmyfaq/content/core/config/index.html
+phpmyfaq/content/core/data/*
+!phpmyfaq/content/core/data/.gitkeep
+phpmyfaq/content/core/logs/*
+!phpmyfaq/content/core/logs/.gitkeep
+phpmyfaq/content/upgrades/*
+!phpmyfaq/content/upgrades/.gitkeep
+phpmyfaq/content/user/images/*
+!phpmyfaq/content/user/images/.gitkeep
+phpmyfaq/content/user/attachments/*
+!phpmyfaq/content/user/attachments/.gitkeep
+
+# Legacy config folders
+phpmyfaq/config/database.php
+phpmyfaq/config/database.bak.php
+phpmyfaq/config/ldap.php
+phpmyfaq/config/ldap.bak.php
+phpmyfaq/config/elasticsearch.php
+phpmyfaq/config/elasticsearch.bak.php
+phpmyfaq/config/azure.php
+phpmyfaq/config/azure.bak.php
+phpmyfaq/config/index.html
+phpmyfaq/data/*
+phpmyfaq/logs/*
+phpmyfaq/images/*
+phpmyfaq/attachments/*
+
+# Third party PHP libraries
+phpmyfaq/src/libs
+
+# Third party frontend libraries and generated JS/CSS
+phpmyfaq/admin/assets/css
+phpmyfaq/admin/assets/fonts
+phpmyfaq/admin/assets/js/editor/*
+phpmyfaq/assets/dist
+phpmyfaq/assets/js/libs
+phpmyfaq/assets/svg/*.svg
+!phpmyfaq/assets/templates/admin
+!phpmyfaq/assets/templates/default
+!phpmyfaq/assets/templates/setup
+
+# Twig caches
+phpmyfaq/admin/assets/cache/
+
+# Node.js modules for development
+node_modules/*
+.pnpm-store
+
+# Backup folder
+backup/*
+
+# PHPUnit
+.phpunit.cache
+coverage.txt
+html-coverage/
+tests/logs
+tests/test.db
+tests/test.db-journal
+tests/content/core/config/database.php
+tests/content/core/config/ldap.php
+tests/content/upgrades
+tests/fixtures/path-to-delete/foo.bar.baz
+
+# Jest related stuff
+coverage/*
+
+# PHPMD
+phpmd.html
+
+# Netbeans project folder
+nbproject/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

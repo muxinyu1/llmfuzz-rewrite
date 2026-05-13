@@ -1,0 +1,29 @@
+//
+// Login
+//
+
+#pmf-admin-login {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  #pmf-admin-login-content {
+    min-width: 0;
+    flex-grow: 1;
+  }
+}
+
+#togglePassword {
+  cursor: pointer;
+
+  &:before {
+    font-family: 'ForkAwesome';
+    content: '\f070';
+    font-style: normal;
+  }
+
+  &.is-active:before {
+    font-family: 'ForkAwesome';
+    content: '\f06e';
+  }
+}

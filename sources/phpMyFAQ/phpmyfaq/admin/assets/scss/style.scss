@@ -1,0 +1,49 @@
+/**
+ * phpMyFAQ v4 default layout for admin
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License,
+ * v. 2.0. If a copy of the MPL was not distributed with this file, You can
+ * obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * @package   phpMyFAQ
+ * @author    Thorsten Rinne <thorsten@phpmyfaq.de>
+ * @copyright 2022-2024 phpMyFAQ Team
+ * @license   https://www.mozilla.org/MPL/2.0/ Mozilla Public License Version 2.0
+ * @link      https://www.phpmyfaq.de
+ * @since     2022-01-25
+ */
+
+// Import Variables
+@import 'variables.scss';
+@import './variables/spacing.scss';
+@import './variables/navigation.scss';
+
+// Import Bootstrap
+@import '~bootstrap/scss/bootstrap.scss';
+
+// Bootstrap Icons
+@import '~bootstrap-icons/font/bootstrap-icons.css';
+
+// Import Mixins
+@import 'mixins.scss';
+
+// Import global styles
+@import 'global.scss';
+
+// Import utilities
+@import 'utilities.scss';
+
+// Import special layouts
+@import 'layout/faq';
+@import 'layout/faq.overview';
+@import 'layout/category';
+@import 'layout/configuration';
+@import 'layout/dashboard';
+@import 'layout/editor';
+@import 'layout/login';
+@import 'layout/users';
+
+// Navigation
+@import 'navigation/nav.scss';
+@import 'navigation/sidenav';
+@import 'navigation/topnav.scss';

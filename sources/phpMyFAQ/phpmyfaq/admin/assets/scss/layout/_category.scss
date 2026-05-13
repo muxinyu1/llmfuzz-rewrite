@@ -1,0 +1,72 @@
+//
+// Category
+//
+
+.nested-2,
+.nested-3,
+.nested-4,
+.nested-5,
+.nested-6,
+.nested-7,
+.nested-8,
+.nested-9,
+.nested-10 {
+  margin-right: calc(-1rem - 1px);
+}
+
+.pmf-category-actions {
+  padding: 0.2rem;
+}
+
+// @deprecated
+.list-group.list-group-root {
+  padding: 0;
+  overflow: hidden;
+
+  &.list-group {
+    margin-bottom: 0;
+  }
+
+  &.list-group-item {
+    border-radius: 0;
+    border-width: 1px 0 0 0;
+    border-right: none !important;
+    cursor: pointer;
+  }
+
+  & > .list-group-item:first-child {
+    border-top-width: 0;
+  }
+
+  & > .list-group {
+    & > .list-group-item {
+      padding-left: 30px;
+    }
+
+    & > .list-group {
+      & > .list-group-item {
+        padding-left: 45px;
+      }
+    }
+  }
+}
+
+.list-group-item {
+  cursor: move;
+
+  &.fas {
+    margin-right: 5px;
+  }
+}
+
+.list-group-item-action[data-bs-toggle='collapse'] {
+  cursor: pointer;
+}
+
+.collapse {
+  display: none;
+
+  &.show {
+    display: block;
+  }
+}

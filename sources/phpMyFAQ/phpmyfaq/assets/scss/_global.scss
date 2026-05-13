@@ -1,0 +1,71 @@
+html,
+body {
+  height: 100%;
+  background: var(--bs-light);
+}
+
+//
+// Top navigation
+//
+.text-bg-pmf-nav {
+  color: var(--bs-light);
+  background-color: var(--bs-pmf-nav);
+}
+
+//
+// Footer
+//
+.text-bg-pmf-footer {
+  color: var(--bs-light);
+  background-color: var(--bs-pmf-footer);
+
+  .nav-link {
+    color: var(--bs-light);
+    &:hover {
+      color: var(--bs-light);
+      text-decoration: underline;
+    }
+  }
+}
+
+//
+// Buttons
+//
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+.btn-outline-primary {
+  color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  &:hover {
+    background-color: var(--bs-primary);
+    color: var(--bs-light);
+  }
+}
+
+.btn-secondary {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+}
+
+.btn-success {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
+}
+
+.btn-danger {
+  background-color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+
+.btn-warning {
+  background-color: var(--bs-warning);
+  border-color: var(--bs-warning);
+}
+
+.btn-info {
+  background-color: var(--bs-info);
+  border-color: var(--bs-info);
+}
