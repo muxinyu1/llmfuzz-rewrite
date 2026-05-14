@@ -79,6 +79,13 @@ class OpenCodeAgent(Agent, BaseModel):
             return None
 
         path = Path(raw)
+        # opencode tools may emit sandbox-absolute paths under /workspace.
+        # Treat /workspace as an alias of this agent's working_dir so
+        # policy checks validate against the local sandbox roots.
+        workspace_root = Path("/workspace")
+        if path.is_absolute() and (path == workspace_root or workspace_root in path.parents):
+            path = Path(self.working_dir) / path.relative_to(workspace_root)
+
         if not path.is_absolute():
             path = Path(self.working_dir) / path
 
@@ -205,6 +212,7 @@ class OpenCodeAgent(Agent, BaseModel):
             f"[opencode] started (startup timeout={self.startup_timeout_seconds}s, idle timeout={self.idle_timeout_seconds}s)",
             flush=True,
         )
+        print(f"[opencode] pid={process.pid}", flush=True)
 
         def _parse_line(line: str):
             """Parse a JSON event line and extract text / tool-use content."""
@@ -229,6 +237,15 @@ class OpenCodeAgent(Agent, BaseModel):
                 if text:
                     text_parts.append(text)
                     print(text, end="", flush=True)
+            elif etype == "step_start":
+                summary = "[step] started"
+                tool_summaries.append(summary)
+                print(summary, flush=True)
+            elif etype == "step_finish":
+                reason = event.get("part", {}).get("reason", "")
+                summary = f"[step] finished ({reason or 'unknown'})"
+                tool_summaries.append(summary)
+                print(summary, flush=True)
             elif etype == "tool_use":
                 part = event.get("part", {})
                 tool = part.get("tool", "")
@@ -253,6 +270,8 @@ class OpenCodeAgent(Agent, BaseModel):
 
         try:
             last_data_time: float | None = None
+            last_heartbeat_time = start_time
+            heartbeat_interval_seconds = 15
             while True:
                 now = time.monotonic()
                 if now - start_time > self.timeout_seconds:
@@ -278,6 +297,21 @@ class OpenCodeAgent(Agent, BaseModel):
                     raise RuntimeError(
                         f"opencode run idle timed out (no output for {self.idle_timeout_seconds}s)"
                     )
+
+                if now - last_heartbeat_time >= heartbeat_interval_seconds:
+                    elapsed = int(now - start_time)
+                    if last_data_time is None:
+                        print(
+                            f"[opencode] waiting for first output... elapsed={elapsed}s pid={process.pid}",
+                            flush=True,
+                        )
+                    else:
+                        idle_for = int(now - last_data_time)
+                        print(
+                            f"[opencode] waiting for next output... idle={idle_for}s elapsed={elapsed}s pid={process.pid}",
+                            flush=True,
+                        )
+                    last_heartbeat_time = now
 
                 ready, _, _ = select.select([stdout_fd], [], [], 0.2)
                 if ready:
